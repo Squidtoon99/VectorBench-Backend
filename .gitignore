@@ -1,0 +1,6 @@
+*.ini
+.env
+*.env 
+__pycache__/
+static/
+test*

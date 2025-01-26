@@ -70,6 +70,9 @@ def classify(date, ticker, articles, stock_del):
             f"Content: {a.get('content', 'No content')}\n" 
             for a in articles
         )
+
+
+    truncated_string = articles_content[:29000]
     
     sys_msg = {
         "role": "system",
@@ -120,7 +123,7 @@ def classify(date, ticker, articles, stock_del):
             f"Date of anomaly: {date}\n"
             f"Stock price change: {stock_del}%\n\n"
             f"Here are the news articles from EODHD for {ticker} on this day:\n\n"
-            f"{articles_content}\n\n"
+            f"{truncated_string}\n\n"
             "Question: What was the primary driver of this anomaly (market, industry, or company)? "
         )
     }
@@ -212,6 +215,23 @@ def load_anomalies_from_db(ticker):
 
     return anomalies
 
+
+def update_anomalies_in_db(classification_data, ticker):
+    rows = [
+        (entry['classification'], entry['explaination'], entry['trade_time'], ticker)
+        for entry in classification_data
+    ]
+
+    query = """
+    UPDATE anomaly
+    SET classification = %s, explaination = %s
+    WHERE trade_time = %s AND ticker = %s;
+    """
+
+    cursor.executemany(query, rows)
+    conn.commit()
+    print(f"Updated {len(rows)} anomalies in the database.")
+
 def main():
     # Define the ticker
     ticker = "TSLA"
@@ -243,7 +263,8 @@ def main():
 
             classification_data.append({
                 "classification": classification,
-                "explanation": explanation
+                "explanation": explanation,
+                "trade_time": trade_time
             })
 
             valid_dels.append(stock_del)
@@ -251,7 +272,8 @@ def main():
             print(f"Error classifying anomaly at {trade_time}: {e}")
             classification_data.append({
                 "classification": "Error",
-                "explanation": "Classification failed."
+                "explanation": "Classification failed.",
+                "trade_time": trade_time
             })
             valid_dels.append(stock_del)
 

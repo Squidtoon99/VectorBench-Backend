@@ -11,3 +11,8 @@ CREATE TABLE IF NOT EXISTS stocks ( id SERIAL, trade_time TIMESTAMPTZ NOT NULL,
               id));
 
 SELECT create_hypertable('stocks', 'trade_time', if_not_exists => TRUE);
+
+CREATE TABLE IF NOT EXISTS anomaly (trade_time TIMESTAMPTZ NOT NULL, ticker TEXT NOT NULL, bot TEXT, distance FLOAT, classification TEXT, descr TEXT, 
+PRIMARY KEY (trade_time, ticker));
+
+SELECT create_hypertable('anomaly', 'trade_time', if_not_exists => TRUE);

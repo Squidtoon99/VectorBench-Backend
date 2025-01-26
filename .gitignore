@@ -1,6 +1,8 @@
 *.ini
 .env
 *.env 
+.venv
 __pycache__/
 static/
 test*
+*.json
